@@ -8,3 +8,5 @@ MD029:
 
 MD013:
   line_length: 180
+  tables: false
+  code_blocks: false
