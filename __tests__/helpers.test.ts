@@ -5,7 +5,6 @@ import * as exec from '@actions/exec'
 import * as github from '@actions/github'
 import * as helpers from '../src/helpers'
 import { expect } from '@jest/globals'
-import { before } from 'node:test'
 import { Context } from '@actions/github/lib/context'
 
 type Octokit = ReturnType<typeof github.getOctokit>
@@ -32,13 +31,11 @@ describe('helpers.ts', () => {
 
     it('throws an error if git log returns a non-zero exit code', async () => {
       const execMock = jest.spyOn(exec, 'exec')
-      execMock.mockImplementationOnce(() => {
+      execMock.mockImplementationOnce(async () => {
         return Promise.resolve(1)
       })
 
-      await expect(
-        helpers.gitLog('HEAD', 'HEAD~2')
-      ).rejects.toThrow()
+      await expect(helpers.gitLog('HEAD', 'HEAD~2')).rejects.toThrow()
     })
   })
 
@@ -51,12 +48,12 @@ describe('helpers.ts', () => {
     }
 
     beforeEach(() => {
-      execMock.mockImplementation((_cmd, _args, opts) => {
+      execMock.mockImplementation(async (_cmd, _args, opts) => {
         const stdout = JSON.stringify(turboStdout)
         opts?.listeners?.stdout?.(Buffer.from(stdout))
         return Promise.resolve(0)
       })
-      gitLogMock.mockImplementation(() => {
+      gitLogMock.mockImplementation(async () => {
         return Promise.resolve([
           {
             sha: '2345678901',
@@ -87,7 +84,7 @@ describe('helpers.ts', () => {
     })
 
     it('gracefully continues processing if exit code is non-zero', async () => {
-      execMock.mockImplementationOnce(() => {
+      execMock.mockImplementationOnce(async () => {
         return Promise.resolve(1)
       })
 
@@ -109,7 +106,7 @@ describe('helpers.ts', () => {
     }
 
     it('returns the sha of the last release', async () => {
-      octokitMock.rest.repos.listDeployments.mockImplementation(() => {
+      octokitMock.rest.repos.listDeployments.mockImplementation(async () => {
         return Promise.resolve({
           headers: {},
           status: 200,
@@ -140,7 +137,7 @@ describe('helpers.ts', () => {
     })
 
     it('rethrows list deployments error if request fails', async () => {
-      octokitMock.rest.repos.listDeployments.mockImplementation(() => {
+      octokitMock.rest.repos.listDeployments.mockImplementation(async () => {
         return Promise.reject(new Error('could not fetch error'))
       })
 
@@ -159,7 +156,7 @@ describe('helpers.ts', () => {
     })
 
     it('should return the current sha if no deployments exist', async () => {
-      octokitMock.rest.repos.listDeployments.mockImplementation(() => {
+      octokitMock.rest.repos.listDeployments.mockImplementation(async () => {
         return Promise.resolve({
           headers: {},
           status: 200,
@@ -282,7 +279,7 @@ describe('helpers.ts', () => {
     } as unknown as Context
 
     it('returns the created release', async () => {
-      octokitMock.rest.repos.createRelease.mockImplementation(() => {
+      octokitMock.rest.repos.createRelease.mockImplementation(async () => {
         return Promise.resolve({
           headers: {},
           status: 201,
@@ -311,7 +308,7 @@ describe('helpers.ts', () => {
     })
 
     it('rethrows create release error if request fails', async () => {
-      octokitMock.rest.repos.createRelease.mockImplementation(() => {
+      octokitMock.rest.repos.createRelease.mockImplementation(async () => {
         return Promise.reject(new Error('could not fetch error'))
       })
 

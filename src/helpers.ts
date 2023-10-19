@@ -4,6 +4,8 @@ import { Context } from '@actions/github/lib/context'
 import { DryRunJson } from './turbo'
 
 type Octokit = ReturnType<typeof github.getOctokit>
+type CreateRelease = Octokit['rest']['repos']['createRelease']
+type CreateReleaseResponse = Awaited<ReturnType<CreateRelease>>['data']
 
 export const conventionalNameToEmoji = {
   build: '👷',
@@ -190,7 +192,7 @@ export async function createRelease(
   context: Context,
   releaseTitle: string,
   releaseBody: string
-) {
+): Promise<CreateReleaseResponse> {
   const result = await octokit.rest.repos.createRelease({
     owner: context.repo.owner,
     repo: context.repo.repo,

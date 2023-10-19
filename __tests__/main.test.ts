@@ -34,7 +34,7 @@ describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    gitLogMock.mockImplementation(() => {
+    gitLogMock.mockImplementation(async () => {
       return Promise.resolve([
         {
           sha: '2345678901',
@@ -47,7 +47,7 @@ describe('action', () => {
       ])
     })
 
-    processCommitsMock.mockImplementation(() => {
+    processCommitsMock.mockImplementation(async () => {
       return Promise.resolve([
         {
           sha: '2345678901',
@@ -60,11 +60,11 @@ describe('action', () => {
       ])
     })
 
-    releaseShaMock.mockImplementation(() => {
+    releaseShaMock.mockImplementation(async () => {
       return Promise.resolve('1234567890')
     })
 
-    createReleaseMock.mockImplementation(() => {
+    createReleaseMock.mockImplementation(async () => {
       return Promise.resolve({
         html_url: 'https://example.com',
         name: 'test release',
