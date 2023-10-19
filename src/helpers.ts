@@ -153,8 +153,13 @@ export async function processCommits(
 
     // Parse output and see if commit affects workspace
     const json = JSON.parse(result) as DryRunJson
+
     const packages = json.packages
-    if (packages.includes(workspace) && isConventionalCommit(commit.message)) {
+    const isMonorepo = json.monorepo
+    if (
+      (!isMonorepo || packages.includes(workspace)) &&
+      isConventionalCommit(commit.message)
+    ) {
       relevantCommits.push(commit)
     }
   }

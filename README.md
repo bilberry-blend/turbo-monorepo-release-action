@@ -6,7 +6,7 @@ The action works by finding all commits between the current and previous deploym
 These commits are then filtered down by two criteria:
 
 1. The commit subject matches the conventional commit format
-2. The commit triggers a change in the workspace as defined by turbo build
+1. The commit triggers a change in the workspace as defined by turbo build
 
 The commits are then grouped by type (fix, feat, etc) and a release is created using the GitHub API.
 Additionally the release content is set as action output, so it can be used in subsequent steps.
@@ -57,8 +57,6 @@ steps:
     run: echo ${{ steps.create-release.outputs.release-url }}
 ```
 
-
-
 ## Update the Action Code
 
 The [`src/`](./src/) directory is the heart of your action! This contains the
@@ -93,7 +91,6 @@ So, what are you waiting for? Go ahead and start customizing your action!
    ```bash
    git checkout -b releases/v1
    ```
-
 1. Replace the contents of `src/` with your action code
 1. Add tests to `__tests__/` for your source code
 1. Format, test, and build the action

@@ -43,11 +43,11 @@ describe('helpers.ts', () => {
     const execMock = jest.spyOn(exec, 'exec')
     const gitLogMock = jest.spyOn(helpers, 'gitLog')
     // Mock commits
-    const turboStdout = {
-      packages: ['test']
-    }
 
     beforeEach(() => {
+      const turboStdout = {
+        packages: ['test']
+      }
       execMock.mockImplementation(async (_cmd, _args, opts) => {
         const stdout = JSON.stringify(turboStdout)
         opts?.listeners?.stdout?.(Buffer.from(stdout))
@@ -91,6 +91,24 @@ describe('helpers.ts', () => {
       const commits = await helpers.gitLog('HEAD', 'HEAD~2')
       const processedCommits = await helpers.processCommits(commits, 'test')
       expect(processedCommits.length).toBe(1) // one commit was filtered out when command failed
+      expect(processedCommits[0].sha).toBeTruthy()
+      expect(processedCommits[0].message).toBeTruthy()
+    })
+
+    it('include commit if turborepo output reports "monorepo": false', async () => {
+      const turboStdout = {
+        monorepo: false
+      }
+
+      execMock.mockImplementation(async (_cmd, _args, opts) => {
+        const stdout = JSON.stringify(turboStdout)
+        opts?.listeners?.stdout?.(Buffer.from(stdout))
+        return Promise.resolve(0)
+      })
+
+      const commits = await helpers.gitLog('HEAD', 'HEAD~2')
+      const processedCommits = await helpers.processCommits(commits, 'test')
+      expect(processedCommits.length).toBe(2) // no commits were filtered out
       expect(processedCommits[0].sha).toBeTruthy()
       expect(processedCommits[0].message).toBeTruthy()
     })
