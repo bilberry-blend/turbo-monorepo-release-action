@@ -52418,7 +52418,7 @@ async function processCommits(commits, workspace) {
     // Checkout commit using shell script
     for (const commit of commits) {
         let result = '';
-        const exitCode = await (0, exec_1.exec)('pnpm', [
+        const exitCode = await (0, exec_1.exec)('npx', [
             'turbo',
             'run',
             'build',
