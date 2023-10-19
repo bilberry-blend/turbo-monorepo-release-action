@@ -10,7 +10,7 @@ author: 'Adventure Tech AS'
 # Define your inputs here.
 inputs:
   github-environment:
-    description: 'The environment you deployed (e.g. staging, production)'
+    description: 'The github deployment environment you deployed (e.g. my-app-staging-prod, production)'
     required: true
   github-token:
     description: 'A github token used to fetch deployments and creating the release'

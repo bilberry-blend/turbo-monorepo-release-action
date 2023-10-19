@@ -1,74 +1,51 @@
-# Create a JavaScript Action Using TypeScript
+# Create release from deployment action
 
-[![GitHub Super-Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
-![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
+This action creates a release from a deployment. It is intended to be used in a workflow that creates a deployment, and then creates a release from that deployment.
 
-Use this template to bootstrap the creation of a TypeScript action. :rocket:
+The action works by finding all commits between the current and previous deployments.
+These commits are then filtered down by two criteria:
 
-This template includes compilation support, tests, a validation workflow,
-publishing, and versioning guidance.
+1. The commit subject matches the conventional commit format
+2. The commit triggers a change in the workspace as defined by turbo build
 
-If you are new, there's also a simpler introduction in the
-[Hello world JavaScript action repository](https://github.com/actions/hello-world-javascript-action).
+The commits are then grouped by type (fix, feat, etc) and a release is created using the GitHub API.
+Additionally the release content is set as action output, so it can be used in subsequent steps.
 
-## Create Your Own Action
+## Inputs
 
-To create your own action, you can use this repository as a template! Just
-follow the below instructions:
+| Name | Description | Required | Default |
+| ---- | ----------- | -------- | ------- |
+| `github-token` | GitHub token | true | |
+| `github-environment` | GitHub deployment environment | true | |
+| `workspace` | Turbo workspace name | true | |
+| `prefix` | Prefix for release title | false | |
 
-1. Click the **Use this template** button at the top of the repository
-1. Select **Create a new repository**
-1. Select an owner and name for your new repository
-1. Click **Create repository**
-1. Clone your new repository
+## Outputs
 
-## Initial Setup
+| Name | Description |
+| ---- | ----------- |
+| `release-title` | Release title |
+| `release-body` | Release description |
+| `release-url` | Release URL to GitHub |
 
-After you've cloned the repository to your local machine or codespace, you'll
-need to perform some initial setup steps before you can develop your action.
+## Example usage¨
 
-> [!NOTE]
->
-> You'll need to have a reasonably modern version of
-> [Node.js](https://nodejs.org) handy. If you are using a version manager like
-> [`nodenv`](https://github.com/nodenv/nodenv) or
-> [`nvm`](https://github.com/nvm-sh/nvm), you can run `nodenv install` in the
-> root of your repository to install the version specified in
-> [`package.json`](./package.json). Otherwise, 20.x or later should work!
+```yaml
+steps:
+  -
+    name: Create release
+    uses: go-fjords/create-release-from-deployment-action@v1
+    with:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+      github-environment: production-my-app
+      workspace: my-workspace
+      prefix: "My App"
+  -
+    name: Print release URL
+    run: echo ${{ steps.create-release.outputs.release-url }}
+```
 
-1. :hammer_and_wrench: Install the dependencies
 
-   ```bash
-   npm install
-   ```
-
-1. :building_construction: Package the TypeScript for distribution
-
-   ```bash
-   npm run bundle
-   ```
-
-1. :white_check_mark: Run the tests
-
-   ```bash
-   $ npm test
-
-   PASS  ./index.test.js
-     ✓ throws invalid number (3ms)
-     ✓ wait 500 ms (504ms)
-     ✓ test runs (95ms)
-
-   ...
-   ```
-
-## Update the Action Metadata
-
-The [`action.yml`](action.yml) file defines metadata about your action, such as
-input(s) and output(s). For details about this file, see
-[Metadata syntax for GitHub Actions](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions).
-
-When you copy this repository, update `action.yml` with the name, description,
-inputs, and outputs for your action.
 
 ## Update the Action Code
 
