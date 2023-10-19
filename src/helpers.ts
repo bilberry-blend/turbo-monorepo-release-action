@@ -32,18 +32,18 @@ function isConventionalCommit(message: string): boolean {
   return regex.test(message)
 }
 
-interface CommitMetadata {
+export interface CommitMetadata {
   type: keyof typeof conventionalNameToEmoji
-  scope: string
+  scope?: string
   description: string
 }
 
-function extractCommitMetadata(message: string): CommitMetadata {
+function extractCommitMetadata(message: string): CommitMetadata | null {
   const regex =
     /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?: (.+)/
   const match = regex.exec(message)
   if (match === null) {
-    throw new Error(`Failed to parse commit message: ${message}`)
+    return null
   }
   return {
     type: match[1] as ConventionalType,
@@ -52,7 +52,7 @@ function extractCommitMetadata(message: string): CommitMetadata {
   }
 }
 
-interface GitLog {
+export interface GitLog {
   sha: string
   message: string
 }
@@ -71,7 +71,7 @@ export async function gitLog(
   let shas = ''
   const result = await exec(
     'git',
-    ['log', `${previousSha}..${currentSha}`, '--pretty="format:%H %s"'],
+    ['log', `${previousSha}..${currentSha}`, '--pretty=format:%H %s'],
     {
       listeners: {
         stdout: (data: Buffer) => {
@@ -86,7 +86,7 @@ export async function gitLog(
   }
 
   const commits = shas.split('\n').map(commit => {
-    const [sha, message] = commit.split(' ')
+    const [sha, message] = commit.split(' ', 2)
     return { sha, message }
   })
 
@@ -105,10 +105,6 @@ export async function releaseSha(
     environment
   })
 
-  if (deploymentStatuses.status !== 200) {
-    throw new Error(`Failed to get deployments for environment ${environment}`)
-  }
-
   let previousSha: string
 
   // Find commit ref for the latest deployment, if any
@@ -116,7 +112,7 @@ export async function releaseSha(
     const latestDeployment = deploymentStatuses.data[0]
     previousSha = latestDeployment.sha
   } else {
-    previousSha = github.context.sha
+    previousSha = context.sha
   }
 
   return previousSha
@@ -125,8 +121,8 @@ export async function releaseSha(
 export async function processCommits(
   commits: GitLog[],
   workspace: string
-): Promise<CommitMetadata[]> {
-  const metadataList: CommitMetadata[] = []
+): Promise<GitLog[]> {
+  const relevantCommits: GitLog[] = []
 
   // Checkout commit using shell script
   for (const commit of commits) {
@@ -157,15 +153,20 @@ export async function processCommits(
     const json = JSON.parse(result) as DryRunJson
     const packages = json.packages
     if (packages.includes(workspace) && isConventionalCommit(commit.message)) {
-      try {
-        const metadata = extractCommitMetadata(commit.message)
-        metadataList.push(metadata)
-      } catch (error) {
-        // Ignore commits that don't follow the conventional commit format
-      }
+      relevantCommits.push(commit)
     }
   }
-  return metadataList
+  return relevantCommits
+}
+
+function commitToMetadata(commit: GitLog): CommitMetadata | null {
+  return extractCommitMetadata(commit.message)
+}
+
+export function commitsToMetadata(commits: GitLog[]): CommitMetadata[] {
+  return commits
+    .map(c => commitToMetadata(c))
+    .filter((c): c is CommitMetadata => c !== null)
 }
 
 export function groupCommits(
@@ -181,4 +182,24 @@ export function groupCommits(
     },
     {} as Record<keyof typeof conventionalNameToEmoji, CommitMetadata[]>
   )
+}
+
+// Primarily extracted as a helper for easier mocking in tests
+export async function createRelease(
+  octokit: Octokit,
+  context: Context,
+  releaseTitle: string,
+  releaseBody: string
+) {
+  const result = await octokit.rest.repos.createRelease({
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    tag_name: releaseTitle,
+    name: releaseTitle,
+    body: releaseBody,
+    draft: false,
+    prerelease: false
+  })
+
+  return result.data
 }
