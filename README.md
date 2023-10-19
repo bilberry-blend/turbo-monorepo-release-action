@@ -11,6 +11,18 @@ These commits are then filtered down by two criteria:
 The commits are then grouped by type (fix, feat, etc) and a release is created using the GitHub API.
 Additionally the release content is set as action output, so it can be used in subsequent steps.
 
+## Pre-requisites
+
+You need to have setup node and npx in your workflow before using this action.
+
+```yaml
+steps:
+  - name: Setup node
+    uses: actions/setup-node@v2
+    with:
+      node-version: '20'
+```
+
 ## Inputs
 
 | Name | Description | Required | Default |

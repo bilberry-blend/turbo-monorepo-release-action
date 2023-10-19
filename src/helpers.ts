@@ -130,7 +130,7 @@ export async function processCommits(
   for (const commit of commits) {
     let result = ''
     const exitCode = await exec(
-      'pnpm',
+      'npx',
       [
         'turbo',
         'run',
