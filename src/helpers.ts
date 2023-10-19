@@ -6,53 +6,55 @@ import { DryRunJson } from './turbo'
 type Octokit = ReturnType<typeof github.getOctokit>
 
 export const conventionalNameToEmoji = {
-    build: '👷',
-    chore: '🧹',
-    ci: '🤖',
-    docs: '📝',
-    feat: '✨',
-    fix: '🐛',
-    perf: '⚡️',
-    refactor: '♻️',
-    revert: '⏪',
-    style: '🎨',
-    test: '✅',
-  }
+  build: '👷',
+  chore: '🧹',
+  ci: '🤖',
+  docs: '📝',
+  feat: '✨',
+  fix: '🐛',
+  perf: '⚡️',
+  refactor: '♻️',
+  revert: '⏪',
+  style: '🎨',
+  test: '✅'
+}
 
-  export type ConventionalType = keyof typeof conventionalNameToEmoji
+export type ConventionalType = keyof typeof conventionalNameToEmoji
 
-  /**
-   * Checks if a commit message is a conventional commit.
-   */
-  function isConventionalCommit(message: string): boolean {
-    // No capture groups or length limits, just a simple regex to check if the message matches the conventional commit format
-    // Check that type is one of the conventional types
-    const regex = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?: .+/
-    return regex.test(message)
-  }
+/**
+ * Checks if a commit message is a conventional commit.
+ */
+function isConventionalCommit(message: string): boolean {
+  // No capture groups or length limits, just a simple regex to check if the message matches the conventional commit format
+  // Check that type is one of the conventional types
+  const regex =
+    /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?: .+/
+  return regex.test(message)
+}
 
-  interface CommitMetadata {
-    type: keyof typeof conventionalNameToEmoji
-    scope: string
-    description: string
-  }
+interface CommitMetadata {
+  type: keyof typeof conventionalNameToEmoji
+  scope: string
+  description: string
+}
 
-  function extractCommitMetadata(message: string): CommitMetadata {
-    const regex = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?: (.+)/
-    const match = regex.exec(message)
-    if (match === null) {
-      throw new Error(`Failed to parse commit message: ${message}`)
-    }
-    return {
-      type: match[1] as ConventionalType,
-      scope: match[2],
-      description: match[3],
-    }
+function extractCommitMetadata(message: string): CommitMetadata {
+  const regex =
+    /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?: (.+)/
+  const match = regex.exec(message)
+  if (match === null) {
+    throw new Error(`Failed to parse commit message: ${message}`)
   }
+  return {
+    type: match[1] as ConventionalType,
+    scope: match[2],
+    description: match[3]
+  }
+}
 
 interface GitLog {
-    sha: string
-    message: string
+  sha: string
+  message: string
 }
 
 /**
@@ -91,8 +93,6 @@ export async function gitLog(
   return commits
 }
 
-interface ActionMetadata {}
-
 export async function releaseSha(
   octokit: Octokit,
   context: Context,
@@ -122,45 +122,63 @@ export async function releaseSha(
   return previousSha
 }
 
-export async function processCommits(commits: GitLog[], workspace: string): Promise<CommitMetadata[]> {
-    let metadataList: CommitMetadata[] = []
+export async function processCommits(
+  commits: GitLog[],
+  workspace: string
+): Promise<CommitMetadata[]> {
+  const metadataList: CommitMetadata[] = []
 
-    // Checkout commit using shell script
-    for (const commit of commits) {
-
-      let result = ''
-      const exitCode = await exec('pnpm', ['turbo', 'run', 'build', `--filter='${workspace}...[${commit.sha}^1]'`, '--dry=json'], {
+  // Checkout commit using shell script
+  for (const commit of commits) {
+    let result = ''
+    const exitCode = await exec(
+      'pnpm',
+      [
+        'turbo',
+        'run',
+        'build',
+        `--filter='${workspace}...[${commit.sha}^1]'`,
+        '--dry=json'
+      ],
+      {
         listeners: {
           stdout: (data: Buffer) => {
             result += data.toString()
           }
         }
-      })
-
-      if(exitCode !== 0) {
-        continue
       }
+    )
 
-      // Parse output and see if commit affects workspace
-      const json = JSON.parse(result) as DryRunJson
-      const packages = json.packages
-      if (packages.includes(workspace) && isConventionalCommit(commit.message)) {
-        try {
-          const metadata = extractCommitMetadata(commit.message)
-          metadataList.push(metadata)
-        } catch (error) {}
+    if (exitCode !== 0) {
+      continue
+    }
 
+    // Parse output and see if commit affects workspace
+    const json = JSON.parse(result) as DryRunJson
+    const packages = json.packages
+    if (packages.includes(workspace) && isConventionalCommit(commit.message)) {
+      try {
+        const metadata = extractCommitMetadata(commit.message)
+        metadataList.push(metadata)
+      } catch (error) {
+        // Ignore commits that don't follow the conventional commit format
       }
     }
-    return metadataList
+  }
+  return metadataList
 }
 
-export function groupCommits(commits: CommitMetadata[]): Record<keyof typeof conventionalNameToEmoji, CommitMetadata[]> {
-    return commits.reduce((acc, metadata) => {
-        if (!acc[metadata.type]) {
-          acc[metadata.type] = []
-        }
-        acc[metadata.type].push(metadata)
-        return acc
-      }, {} as Record<keyof typeof conventionalNameToEmoji, CommitMetadata[]>)
+export function groupCommits(
+  commits: CommitMetadata[]
+): Record<keyof typeof conventionalNameToEmoji, CommitMetadata[]> {
+  return commits.reduce(
+    (acc, metadata) => {
+      if (!acc[metadata.type]) {
+        acc[metadata.type] = []
+      }
+      acc[metadata.type].push(metadata)
+      return acc
+    },
+    {} as Record<keyof typeof conventionalNameToEmoji, CommitMetadata[]>
+  )
 }

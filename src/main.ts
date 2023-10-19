@@ -1,8 +1,14 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { format } from 'date-fns'
-import { ConventionalType, conventionalNameToEmoji, gitLog, groupCommits, processCommits, releaseSha } from './helpers'
-
+import {
+  ConventionalType,
+  conventionalNameToEmoji,
+  gitLog,
+  groupCommits,
+  processCommits,
+  releaseSha
+} from './helpers'
 
 /**
  * The main function for the action.
@@ -10,11 +16,12 @@ import { ConventionalType, conventionalNameToEmoji, gitLog, groupCommits, proces
  */
 export async function run(): Promise<void> {
   try {
-
     // Get some initial context and inputs necessary for the action
     const owner = github.context.repo.owner
     const repo = github.context.repo.repo
-    const environment: string = core.getInput('github-environment', { required: true })
+    const environment: string = core.getInput('github-environment', {
+      required: true
+    })
     const prefix: string = core.getInput('prefix', { required: true })
     const token: string = core.getInput('github-token', { required: true })
     const workspace: string = core.getInput('workspace', { required: true })
@@ -32,12 +39,13 @@ export async function run(): Promise<void> {
     // Finally group metadata by type and create a pretty release body
     const groupedMetadata = groupCommits(metadataList)
 
-
-    const releaseBody = Object.entries(groupedMetadata).map(([type, metadataList]) => {
-      const emoji = conventionalNameToEmoji[type as ConventionalType] // Object.entries trashes the type
-      const metadataLines = metadataList.map(metadata => `- ${metadata.description}`)
-      return `${emoji} **${type}**\n\n${metadataLines.join('\n')}`
-    }).join('\n\n\n')
+    const releaseBody = Object.entries(groupedMetadata)
+      .map(([type, list]) => {
+        const emoji = conventionalNameToEmoji[type as ConventionalType] // Object.entries trashes the type
+        const metadataLines = list.map(metadata => `- ${metadata.description}`)
+        return `${emoji} **${type}**\n\n${metadataLines.join('\n')}`
+      })
+      .join('\n\n\n')
 
     // Create a release
     const release = await octokit.rest.repos.createRelease({
@@ -47,7 +55,7 @@ export async function run(): Promise<void> {
       name: releaseTitle,
       body: releaseBody,
       draft: false,
-      prerelease: false,
+      prerelease: false
     })
 
     // Add release URL as an output
