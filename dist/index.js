@@ -52377,7 +52377,9 @@ function extractCommitMetadata(message) {
  */
 async function gitLog(currentSha, previousSha) {
     let shas = '';
-    const result = await (0, exec_1.exec)('git', ['log', `${previousSha}..${currentSha}`, '--pretty=format:%H %s'], {
+    const isSameSha = previousSha === currentSha;
+    const range = isSameSha ? `${currentSha} -1` : `${previousSha}..${currentSha}`;
+    const result = await (0, exec_1.exec)('git', ['log', `${range}`, '--pretty=format:%H %s'], {
         listeners: {
             stdout: (data) => {
                 shas += data.toString();

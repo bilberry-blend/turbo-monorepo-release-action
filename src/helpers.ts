@@ -71,9 +71,11 @@ export async function gitLog(
   previousSha: string
 ): Promise<GitLog[]> {
   let shas = ''
+  const isSameSha = previousSha === currentSha
+  const range = isSameSha ? `${currentSha} -1` : `${previousSha}..${currentSha}`
   const result = await exec(
     'git',
-    ['log', `${previousSha}..${currentSha}`, '--pretty=format:%H %s'],
+    ['log', `${range}`, '--pretty=format:%H %s'],
     {
       listeners: {
         stdout: (data: Buffer) => {
