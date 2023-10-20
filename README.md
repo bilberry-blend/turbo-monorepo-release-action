@@ -1,15 +1,17 @@
-# Create release from deployment action
+# Turbo Monorepo Release Action
 
-This action creates a release from a deployment. It is intended to be used in a workflow that creates a deployment, and then creates a release from that deployment.
+Create release for a Turbo Monorepo for a commit range. It is intended to be
+used in a workflow that creates a deployment. The action accepts two commits
+representing a range.
 
-The action works by finding all commits between the current and previous deployments.
 These commits are then filtered down by two criteria:
 
 1. The commit subject matches the conventional commit format
 1. The commit triggers a change in the workspace as defined by turbo build
 
-The commits are then grouped by type (fix, feat, etc) and a release is created using the GitHub API.
-Additionally the release content is set as action output, so it can be used in subsequent steps.
+They are grouped by type (fix, feat, etc) and a release is created using the
+GitHub API. The release content is set as action output, so it can be used in
+subsequent steps.
 
 ## Pre-requisites
 
@@ -25,36 +27,52 @@ steps:
 
 ## Inputs
 
-| Name | Description | Required | Default |
-| ---- | ----------- | -------- | ------- |
-| `github-token` | GitHub token | true | |
-| `github-environment` | GitHub deployment environment | true | |
-| `workspace` | Turbo workspace name | true | |
-| `prefix` | Prefix for release title | false | |
+| Name           | Description              | Required | Default |
+| -------------- | ------------------------ | -------- | ------- |
+| `github-token` | GitHub token             | true     |         |
+| `workspace`    | Turbo workspace name     | true     |         |
+| `prefix`       | Prefix for release title | false    | ""      |
+| `from`         | Commit SHA to start from | true     |         |
+| `to`           | Commit SHA to end at     | true     |         |
 
 ## Outputs
 
-| Name | Description |
-| ---- | ----------- |
-| `release-title` | Release title |
-| `release-body` | Release description |
-| `release-url` | Release URL to GitHub |
+| Name            | Description           |
+| --------------- | --------------------- |
+| `release-title` | Release title         |
+| `release-body`  | Release description   |
+| `release-url`   | Release URL to GitHub |
 
 ## Example usage¨
 
 ```yaml
-steps:
-  -
-    name: Create release
-    uses: go-fjords/create-release-from-deployment-action@v1
-    with:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
-      github-environment: production-my-app
-      workspace: my-workspace
-      prefix: "My App"
-  -
-    name: Print release URL
-    run: echo ${{ steps.create-release.outputs.release-url }}
+on: [deployment]
+# Release job:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create release
+        uses: go-fjords/create-release-from-deployment-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Get the environment from the deployment event
+          github-environment: ${{ github.event.deployment.environment }}
+          workspace: my-workspace
+          prefix: 'My App'
+          # Get the previous commit somehow
+          from: 6b81ece3474de57f7fa070192fa1b88e303acb2a
+          # Get the last release commit from the deployment event
+          to: ${{ github.event.deployment.ref }}
+      - name: Print release URL
+        run: echo ${{ steps.create-release.outputs.release-url }}
 ```
 
 ## Update the Action Code

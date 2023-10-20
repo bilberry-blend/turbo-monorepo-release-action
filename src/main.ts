@@ -8,8 +8,7 @@ import {
   createRelease,
   gitLog,
   groupCommits,
-  processCommits,
-  releaseSha
+  processCommits
 } from './helpers'
 
 /**
@@ -19,20 +18,18 @@ import {
 export async function run(): Promise<void> {
   try {
     // Get some initial context and inputs necessary for the action
-    const environment: string = core.getInput('github-environment', {
-      required: true
-    })
     const prefix: string = core.getInput('prefix', { required: true })
     const token: string = core.getInput('github-token', { required: true })
     const workspace: string = core.getInput('workspace', { required: true })
+    const from: string = core.getInput('from', { required: true })
+    const to: string = core.getInput('to', { required: true })
     const octokit = github.getOctokit(token)
 
     const date = new Date()
     const releaseTitle = `${prefix}-${format(date, 'yyyy-MM-dd-HH-mm')}`
 
     // Process all commits since the last release and group them by type
-    const previousSha = await releaseSha(octokit, github.context, environment)
-    const commits = await gitLog(github.context.sha, previousSha)
+    const commits = await gitLog(from, to)
     const relevantCommits = await processCommits(commits, workspace)
     const metadataList = commitsToMetadata(relevantCommits)
     const groupedMetadata = groupCommits(metadataList)

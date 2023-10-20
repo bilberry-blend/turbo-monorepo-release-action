@@ -1,25 +1,31 @@
-name: 'Create release from deployment'
+name: 'Turbo Monorepo Release Action'
 description: |
-  Creates a GitHub release from a deployment.
-  Uses the commits between the previous deployment
-  and the current one to find the commit messages.
-  Filters commits to conventional commits and those
-  that trigger a turbo build (using turbo workspaces).
+  Creates a GitHub release from a commit range.
+  Filters the commit range by two criteria:
+
+  1. The commits must match conventional commit format
+  2. The commits must trigger a turbo build for the workspace
+
+  Commit range is inclusive, both from
+  and to is included in the release.
 author: 'Adventure Tech AS'
 
 # Define your inputs here.
 inputs:
-  github-environment:
-    description: 'The github deployment environment you deployed (e.g. my-app-staging-prod, production)'
-    required: true
   github-token:
-    description: 'A github token used to fetch deployments and creating the release'
+    description: 'A github token used to create the release'
     required: true
   prefix:
     description: 'The prefix of the release tag (e.g. my-app)'
     required: true
   workspace:
     description: 'The turbo workspace name used to filter commits, (e.g. my-app)'
+    required: true
+  from:
+    description: 'First commit in the release'
+    required: true
+  to:
+    description: 'Last commit in the release'
     required: true
 
 # Define your outputs here.

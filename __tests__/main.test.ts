@@ -24,7 +24,6 @@ const setOutputMock = jest.spyOn(core, 'setOutput')
 // Mock the side-effecting helper functions from src/helpers.ts
 const gitLogMock = jest.spyOn(helpers, 'gitLog')
 const processCommitsMock = jest.spyOn(helpers, 'processCommits')
-const releaseShaMock = jest.spyOn(helpers, 'releaseSha')
 const createReleaseMock = jest.spyOn(helpers, 'createRelease')
 
 // Mock the action's main function
@@ -58,10 +57,6 @@ describe('action', () => {
           message: 'fix: Fixed bug in date picker'
         }
       ])
-    })
-
-    releaseShaMock.mockImplementation(async () => {
-      return Promise.resolve('1234567890')
     })
 
     createReleaseMock.mockImplementation(async () => {
@@ -123,22 +118,6 @@ describe('action', () => {
 
     // Verify that all of the core library functions were called correctly
     expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Failed to get git log')
-  })
-
-  it('sets a failed status if previousSha fails', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    releaseShaMock.mockImplementation(() => {
-      throw new Error('Failed to get previousSha')
-    })
-
-    await main.run()
-    expect(runMock).toHaveReturned()
-
-    // Verify that all of the core library functions were called correctly
-    expect(setFailedMock).toHaveBeenNthCalledWith(
-      1,
-      'Failed to get previousSha'
-    )
   })
 
   it('sets a failed status if createRelease fails', async () => {

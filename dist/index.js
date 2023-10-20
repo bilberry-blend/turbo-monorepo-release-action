@@ -52375,10 +52375,10 @@ function extractCommitMetadata(message) {
  * @param previousSha
  * @returns List of shas between the current and previous sha
  */
-async function gitLog(currentSha, previousSha) {
+async function gitLog(from, to) {
     let shas = '';
-    const isSameSha = previousSha === currentSha;
-    const range = isSameSha ? `${currentSha} -1` : `${previousSha}..${currentSha}`;
+    const isSameSha = from === to;
+    const range = isSameSha ? `${to} -1` : `${from}^..${to}`;
     const result = await (0, exec_1.exec)('git', ['log', `${range}`, '--pretty=format:%H %s'], {
         listeners: {
             stdout: (data) => {
@@ -52526,18 +52526,16 @@ const helpers_1 = __nccwpck_require__(43015);
 async function run() {
     try {
         // Get some initial context and inputs necessary for the action
-        const environment = core.getInput('github-environment', {
-            required: true
-        });
         const prefix = core.getInput('prefix', { required: true });
         const token = core.getInput('github-token', { required: true });
         const workspace = core.getInput('workspace', { required: true });
+        const from = core.getInput('from', { required: true });
+        const to = core.getInput('to', { required: true });
         const octokit = github.getOctokit(token);
         const date = new Date();
         const releaseTitle = `${prefix}-${(0, date_fns_1.format)(date, 'yyyy-MM-dd-HH-mm')}`;
         // Process all commits since the last release and group them by type
-        const previousSha = await (0, helpers_1.releaseSha)(octokit, github.context, environment);
-        const commits = await (0, helpers_1.gitLog)(github.context.sha, previousSha);
+        const commits = await (0, helpers_1.gitLog)(from, to);
         const relevantCommits = await (0, helpers_1.processCommits)(commits, workspace);
         const metadataList = (0, helpers_1.commitsToMetadata)(relevantCommits);
         const groupedMetadata = (0, helpers_1.groupCommits)(metadataList);

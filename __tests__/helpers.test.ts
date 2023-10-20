@@ -16,9 +16,9 @@ type CreateReleaseResponse = Awaited<ReturnType<CreateRelease>>
 describe('helpers.ts', () => {
   describe('gitLog', () => {
     it('returns a list of commits', async () => {
-      const commits = await helpers.gitLog('HEAD', 'HEAD~2')
+      const commits = await helpers.gitLog('HEAD~2', 'HEAD')
 
-      expect(commits.length).toBe(2)
+      expect(commits.length).toBe(3)
       expect(commits[0].sha).toBeTruthy()
       expect(commits[0].message).toBeTruthy()
     })
