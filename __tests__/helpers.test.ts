@@ -15,8 +15,21 @@ type CreateReleaseResponse = Awaited<ReturnType<CreateRelease>>
 
 describe('helpers.ts', () => {
   describe('gitLog', () => {
+    const execMock = jest.spyOn(exec, 'exec')
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
     it('returns a list of commits', async () => {
-      const commits = await helpers.gitLog('HEAD~2', 'HEAD')
+      // Mock out git log
+      execMock.mockImplementation(async (_cmd, _args, opts) => {
+        const stdout = `1234567890 test commit
+2345678901 test commit
+3456789012 test commit`
+        opts?.listeners?.stdout?.(Buffer.from(stdout))
+        return Promise.resolve(0)
+      })
+
+      const commits = await helpers.gitLog('HEAD~3', 'HEAD')
 
       expect(commits.length).toBe(3)
       expect(commits[0].sha).toBeTruthy()
@@ -24,13 +37,16 @@ describe('helpers.ts', () => {
     })
 
     it('throws an error if git log fails', async () => {
-      await expect(
-        helpers.gitLog('not a commit ref', 'HEAD~2')
-      ).rejects.toThrow()
+      execMock.mockImplementation(async (_cmd, _args, opts) => {
+        const stdout =
+          "fatal: your current branch 'notabranch' does not have any commits yet"
+        opts?.listeners?.stdout?.(Buffer.from(stdout))
+        return Promise.resolve(1)
+      })
+      await expect(helpers.gitLog('notabranch', 'HEAD~2')).rejects.toThrow()
     })
 
     it('throws an error if git log returns a non-zero exit code', async () => {
-      const execMock = jest.spyOn(exec, 'exec')
       execMock.mockImplementationOnce(async () => {
         return Promise.resolve(1)
       })
