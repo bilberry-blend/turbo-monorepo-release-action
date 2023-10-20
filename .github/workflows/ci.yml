@@ -71,8 +71,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           workspace: "src"
           prefix: "test-action"
-          from: HEAD~2
-          to: HEAD
+          from: ${{ github.sha }}~2
+          to: ${{ github.sha }}
 
 
       - name: Print Output
