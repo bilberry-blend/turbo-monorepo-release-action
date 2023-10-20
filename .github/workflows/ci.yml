@@ -67,7 +67,7 @@ jobs:
       - name: Get reference to first and third commit in main
         id: get-commits
         run: |
-          git log --pretty=format:"%H" -n 3 origin main > commits.txt
+          git log --pretty=format:"%H" -n 3 origin/main > commits.txt
           echo "first-commit=$(head -n 1 commits.txt)" >> $GITHUB_OUTPUT
           echo "third-commit=$(tail -n 1 commits.txt)" >> $GITHUB_OUTPUT
 
