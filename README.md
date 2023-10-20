@@ -202,3 +202,8 @@ steps:
     id: output
     run: echo "${{ steps.test-action.outputs.time }}"
 ```
+
+# Test commits for release
+
+feat: New feature
+fix: Fix bug
