@@ -69,7 +69,6 @@ jobs:
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          github-environment: production
           workspace: "src"
           prefix: "test-action"
           from: HEAD~2
