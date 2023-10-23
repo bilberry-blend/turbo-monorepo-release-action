@@ -52402,7 +52402,7 @@ async function gitLog(from, to) {
     let shas = '';
     const isSameSha = from === to;
     const range = isSameSha ? `${to} -1` : `${from}^! ${to}`;
-    const result = await (0, exec_1.exec)('git', ['log', `${range}`, `--pretty=format:%H %s`], {
+    const result = await (0, exec_1.exec)('git', ['log', `${range}`, `--pretty="format:%H %s"`], {
         listeners: {
             stdout: (data) => {
                 shas += data.toString();
