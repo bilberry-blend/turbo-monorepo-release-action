@@ -27,13 +27,13 @@ steps:
 
 ## Inputs
 
-| Name           | Description              | Required | Default |
-| -------------- | ------------------------ | -------- | ------- |
-| `github-token` | GitHub token             | true     |         |
-| `workspace`    | Turbo workspace name     | true     |         |
-| `prefix`       | Prefix for release title | false    | ""      |
-| `from`         | Commit SHA to start from | true     |         |
-| `to`           | Commit SHA to end at     | true     |         |
+| Name           | Description                          | Required | Default |
+| -------------- | ------------------------------------ | -------- | ------- |
+| `github-token` | GitHub token                         | true     |         |
+| `workspace`    | Turbo workspace name                 | true     |         |
+| `prefix`       | Prefix for release title             | false    | ""      |
+| `from`         | Commit SHA to start from (exclusive) | true     |         |
+| `to`           | Commit SHA to end at                 | true     |         |
 
 ## Outputs
 
@@ -205,5 +205,4 @@ steps:
 
 ## Test commits for release
 
-feat: New feature
-fix: Fix bug
+feat: New feature fix: Fix bug

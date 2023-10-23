@@ -92,7 +92,7 @@ export interface GitLog {
 export async function gitLog(from: string, to: string): Promise<GitLog[]> {
   let shas = ''
   const isSameSha = from === to
-  const range = isSameSha ? `${to} -1` : `${from}^! ${to}`
+  const range = isSameSha ? `${to} -1` : `${from}..${to}`
   const result = await exec(
     'git',
     ['log', `${range}`, `--pretty="format:%H %s"`],
@@ -150,6 +150,10 @@ export async function processCommits(
 
   // Checkout commit using shell script
   for (const commit of commits) {
+    const checkout = await exec('git', ['checkout', commit.sha])
+    if (checkout !== 0) {
+      continue
+    }
     let result = ''
     const exitCode = await exec(
       'npx',

@@ -52401,7 +52401,7 @@ exports.gitCheckout = gitCheckout;
 async function gitLog(from, to) {
     let shas = '';
     const isSameSha = from === to;
-    const range = isSameSha ? `${to} -1` : `${from}^! ${to}`;
+    const range = isSameSha ? `${to} -1` : `${from}..${to}`;
     const result = await (0, exec_1.exec)('git', ['log', `${range}`, `--pretty="format:%H %s"`], {
         listeners: {
             stdout: (data) => {
@@ -52442,6 +52442,10 @@ async function processCommits(commits, workspace) {
     const relevantCommits = [];
     // Checkout commit using shell script
     for (const commit of commits) {
+        const checkout = await (0, exec_1.exec)('git', ['checkout', commit.sha]);
+        if (checkout !== 0) {
+            continue;
+        }
         let result = '';
         const exitCode = await (0, exec_1.exec)('npx', [
             'turbo',
@@ -52540,7 +52544,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(42186));
 const github = __importStar(__nccwpck_require__(95438));
-const exec_1 = __nccwpck_require__(71514);
 const date_fns_1 = __nccwpck_require__(73314);
 const helpers_1 = __nccwpck_require__(43015);
 /**
@@ -52566,15 +52569,6 @@ async function run() {
             originalBranch = await (0, helpers_1.gitCurrentBranch)();
             await (0, helpers_1.gitCheckout)(branch);
         }
-        let revisions = '';
-        await (0, exec_1.exec)('git', ['log', '--pretty="format:%H %s"'], {
-            listeners: {
-                stdout: (data) => {
-                    revisions += data.toString();
-                }
-            }
-        });
-        core.info(`Revisions: ${revisions}`);
         // Process all commits since the last release and group them by type
         core.startGroup('Commits in range');
         const commits = await (0, helpers_1.gitLog)(from, to);
