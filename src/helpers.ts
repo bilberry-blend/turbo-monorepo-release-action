@@ -66,10 +66,14 @@ export interface GitLog {
  * @param previousSha
  * @returns List of shas between the current and previous sha
  */
-export async function gitLog(from: string, to: string): Promise<GitLog[]> {
+export async function gitLog(
+  from: string,
+  to: string,
+  branch: string
+): Promise<GitLog[]> {
   let shas = ''
   const isSameSha = from === to
-  const range = isSameSha ? `${to} -1` : `${from}^! ${to}`
+  const range = isSameSha ? `${to} -1` : `${from}^! ${to} ${branch}`
   const result = await exec(
     'git',
     ['log', `${range}`, '--pretty=format:%H %s'],

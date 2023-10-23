@@ -21,6 +21,7 @@ export async function run(): Promise<void> {
     const prefix: string = core.getInput('prefix', { required: true })
     const token: string = core.getInput('github-token', { required: true })
     const workspace: string = core.getInput('workspace', { required: true })
+    const branch = core.getInput('branch', { required: false })
     const from: string = core.getInput('from', { required: true })
     const to: string = core.getInput('to', { required: true })
     const octokit = github.getOctokit(token)
@@ -28,10 +29,14 @@ export async function run(): Promise<void> {
     const date = new Date()
     const releaseTitle = `${prefix}-${format(date, 'yyyy-MM-dd-HH-mm')}`
 
-    // Process all commits since the last release and group them by type
-    const commits = await gitLog(from, to)
+    // If branch specified, checkout that branch
+    if (branch) {
+      core.info(`Using ${branch} branch to get commit log`)
+    }
 
+    // Process all commits since the last release and group them by type
     core.startGroup('Commits in range')
+    const commits = await gitLog(from, to, branch)
     for (const commit of commits) {
       core.info(`${commit.sha} - ${commit.message}`)
     }

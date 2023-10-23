@@ -29,7 +29,7 @@ describe('helpers.ts', () => {
         return Promise.resolve(0)
       })
 
-      const commits = await helpers.gitLog('HEAD~3', 'HEAD')
+      const commits = await helpers.gitLog('HEAD~3', 'HEAD', '')
 
       expect(commits.length).toBe(3)
       expect(commits[0].sha).toBeTruthy()
@@ -43,7 +43,7 @@ describe('helpers.ts', () => {
         opts?.listeners?.stdout?.(Buffer.from(stdout))
         return Promise.resolve(1)
       })
-      await expect(helpers.gitLog('notabranch', 'HEAD~2')).rejects.toThrow()
+      await expect(helpers.gitLog('notabranch', 'HEAD~2', '')).rejects.toThrow()
     })
 
     it('throws an error if git log returns a non-zero exit code', async () => {
@@ -51,7 +51,7 @@ describe('helpers.ts', () => {
         return Promise.resolve(1)
       })
 
-      await expect(helpers.gitLog('HEAD', 'HEAD~2')).rejects.toThrow()
+      await expect(helpers.gitLog('HEAD', 'HEAD~2', '')).rejects.toThrow()
     })
   })
 
@@ -92,7 +92,7 @@ describe('helpers.ts', () => {
     })
 
     it('returns a list of conventional commits', async () => {
-      const commits = await helpers.gitLog('HEAD', 'HEAD~2')
+      const commits = await helpers.gitLog('HEAD', 'HEAD~2', '')
       const processedCommits = await helpers.processCommits(commits, 'test')
       expect(processedCommits.length).toBe(2)
       expect(processedCommits[0].sha).toBeTruthy()
@@ -104,7 +104,7 @@ describe('helpers.ts', () => {
         return Promise.resolve(1)
       })
 
-      const commits = await helpers.gitLog('HEAD', 'HEAD~2')
+      const commits = await helpers.gitLog('HEAD', 'HEAD~2', '')
       const processedCommits = await helpers.processCommits(commits, 'test')
       expect(processedCommits.length).toBe(1) // one commit was filtered out when command failed
       expect(processedCommits[0].sha).toBeTruthy()
@@ -122,7 +122,7 @@ describe('helpers.ts', () => {
         return Promise.resolve(0)
       })
 
-      const commits = await helpers.gitLog('HEAD', 'HEAD~2')
+      const commits = await helpers.gitLog('HEAD', 'HEAD~2', '')
       const processedCommits = await helpers.processCommits(commits, 'test')
       expect(processedCommits.length).toBe(2) // no commits were filtered out
       expect(processedCommits[0].sha).toBeTruthy()

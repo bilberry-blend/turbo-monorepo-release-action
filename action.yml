@@ -27,6 +27,9 @@ inputs:
   to:
     description: 'Last commit in the release'
     required: true
+  branch:
+    description: 'The branch to create the release from'
+    required: false
 
 # Define your outputs here.
 outputs:

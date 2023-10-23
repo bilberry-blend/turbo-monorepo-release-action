@@ -52375,10 +52375,10 @@ function extractCommitMetadata(message) {
  * @param previousSha
  * @returns List of shas between the current and previous sha
  */
-async function gitLog(from, to) {
+async function gitLog(from, to, branch) {
     let shas = '';
     const isSameSha = from === to;
-    const range = isSameSha ? `${to} -1` : `${from}^! ${to}`;
+    const range = isSameSha ? `${to} -1` : `${from}^! ${to} ${branch}`;
     const result = await (0, exec_1.exec)('git', ['log', `${range}`, '--pretty=format:%H %s'], {
         listeners: {
             stdout: (data) => {
@@ -52529,14 +52529,19 @@ async function run() {
         const prefix = core.getInput('prefix', { required: true });
         const token = core.getInput('github-token', { required: true });
         const workspace = core.getInput('workspace', { required: true });
+        const branch = core.getInput('branch', { required: false });
         const from = core.getInput('from', { required: true });
         const to = core.getInput('to', { required: true });
         const octokit = github.getOctokit(token);
         const date = new Date();
         const releaseTitle = `${prefix}-${(0, date_fns_1.format)(date, 'yyyy-MM-dd-HH-mm')}`;
+        // If branch specified, checkout that branch
+        if (branch) {
+            core.info(`Using ${branch} branch to get commit log`);
+        }
         // Process all commits since the last release and group them by type
-        const commits = await (0, helpers_1.gitLog)(from, to);
         core.startGroup('Commits in range');
+        const commits = await (0, helpers_1.gitLog)(from, to, branch);
         for (const commit of commits) {
             core.info(`${commit.sha} - ${commit.message}`);
         }

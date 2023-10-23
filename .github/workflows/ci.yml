@@ -67,9 +67,9 @@ jobs:
       - name: Get reference to first and third commit in main
         id: get-commits
         run: |
-          git checkout main
-          git log --pretty="format:%H"
-          git log --pretty="format:%H" -n 3 > commits.txt
+          git checkout origin/main
+          git log --pretty="format:%H" origin/main
+          git log --pretty="format:%H" -n 3 origin/main > commits.txt
           echo "first-commit=$(tail -n 1 commits.txt)" >> "$GITHUB_OUTPUT"
           echo "third-commit=$(head -n 1 commits.txt)" >> "$GITHUB_OUTPUT"
 
@@ -82,6 +82,7 @@ jobs:
           prefix: "test-action"
           from: ${{ steps.get-commits.outputs.first-commit }}
           to: ${{ steps.get-commits.outputs.third-commit }}
+          branch: "main"
 
       - name: Print Output
         id: output
