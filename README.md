@@ -43,7 +43,7 @@ steps:
 | `release-body`  | Release description   |
 | `release-url`   | Release URL to GitHub |
 
-## Example usage¨
+## Example usage
 
 ```yaml
 on: [deployment]
