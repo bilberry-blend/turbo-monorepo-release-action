@@ -111,8 +111,9 @@ export async function gitLog(from: string, to: string): Promise<GitLog[]> {
   }
 
   const commits = shas.split('\n').map(commit => {
-    const [sha, message] = commit.split(' ', 2)
-    return { sha, message }
+    // Split sha and message
+    const [sha, ...message] = commit.split(' ')
+    return { sha, message: message.join(' ') } // Not very efficient, but it's a small string
   })
 
   return commits
