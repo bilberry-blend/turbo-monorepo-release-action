@@ -22,6 +22,8 @@ const setFailedMock = jest.spyOn(core, 'setFailed')
 const setOutputMock = jest.spyOn(core, 'setOutput')
 
 // Mock the side-effecting helper functions from src/helpers.ts
+const gitCurrentBranchMock = jest.spyOn(helpers, 'gitCurrentBranch')
+const gitCheckoutMock = jest.spyOn(helpers, 'gitCheckout')
 const gitLogMock = jest.spyOn(helpers, 'gitLog')
 const processCommitsMock = jest.spyOn(helpers, 'processCommits')
 const createReleaseMock = jest.spyOn(helpers, 'createRelease')
@@ -32,6 +34,14 @@ const runMock = jest.spyOn(main, 'run')
 describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+
+    gitCurrentBranchMock.mockImplementation(async () => {
+      return Promise.resolve('main')
+    })
+
+    gitCheckoutMock.mockImplementation(async () => {
+      return Promise.resolve()
+    })
 
     gitLogMock.mockImplementation(async () => {
       return Promise.resolve([
@@ -72,14 +82,18 @@ describe('action', () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation((name: string): string => {
       switch (name) {
-        case 'github-environment':
-          return 'production'
         case 'prefix':
           return 'my-app'
         case 'github-token':
           return '1234567890'
         case 'workspace':
           return 'my-app'
+        case 'branch':
+          return 'main'
+        case 'from':
+          return '1234567890'
+        case 'to':
+          return '2345678901'
         default:
           return ''
       }

@@ -3,12 +3,14 @@ import * as github from '@actions/github'
 import { format } from 'date-fns'
 import {
   ConventionalType,
+  gitCheckout,
   commitsToMetadata,
   conventionalNameToEmoji,
   createRelease,
   gitLog,
   groupCommits,
-  processCommits
+  processCommits,
+  gitCurrentBranch
 } from './helpers'
 
 /**
@@ -16,6 +18,7 @@ import {
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 export async function run(): Promise<void> {
+  let originalBranch = ''
   try {
     // Get some initial context and inputs necessary for the action
     const prefix: string = core.getInput('prefix', { required: true })
@@ -30,13 +33,15 @@ export async function run(): Promise<void> {
     const releaseTitle = `${prefix}-${format(date, 'yyyy-MM-dd-HH-mm')}`
 
     // If branch specified, checkout that branch
-    if (branch) {
-      core.info(`Using ${branch} branch to get commit log`)
+    if (branch !== '') {
+      core.info(`Checking out branch ${branch}`)
+      originalBranch = await gitCurrentBranch()
+      await gitCheckout(branch)
     }
 
     // Process all commits since the last release and group them by type
     core.startGroup('Commits in range')
-    const commits = await gitLog(from, to, branch)
+    const commits = await gitLog(from, to)
     for (const commit of commits) {
       core.info(`${commit.sha} - ${commit.message}`)
     }
@@ -88,5 +93,10 @@ export async function run(): Promise<void> {
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
+  } finally {
+    if (originalBranch !== '') {
+      core.info(`Checking out original branch ${originalBranch}`)
+      await gitCheckout(originalBranch)
+    }
   }
 }

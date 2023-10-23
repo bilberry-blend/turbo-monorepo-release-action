@@ -52332,7 +52332,7 @@ function wrappy (fn, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createRelease = exports.groupCommits = exports.commitsToMetadata = exports.processCommits = exports.releaseSha = exports.gitLog = exports.conventionalNameToEmoji = void 0;
+exports.createRelease = exports.groupCommits = exports.commitsToMetadata = exports.processCommits = exports.releaseSha = exports.gitLog = exports.gitCheckout = exports.gitCurrentBranch = exports.conventionalNameToEmoji = void 0;
 const exec_1 = __nccwpck_require__(71514);
 exports.conventionalNameToEmoji = {
     build: '👷',
@@ -52368,6 +52368,29 @@ function extractCommitMetadata(message) {
         description: match[3]
     };
 }
+async function gitCurrentBranch() {
+    // Get current branch name
+    let currentBranch = '';
+    const exitCode = await (0, exec_1.exec)('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+        listeners: {
+            stdout: (data) => {
+                currentBranch += data.toString();
+            }
+        }
+    });
+    if (exitCode !== 0) {
+        throw new Error('Failed to get current branch');
+    }
+    return currentBranch.trim();
+}
+exports.gitCurrentBranch = gitCurrentBranch;
+async function gitCheckout(branch) {
+    const result = await (0, exec_1.exec)('git', ['checkout', branch]);
+    if (result !== 0) {
+        throw new Error(`Failed to checkout branch ${branch}`);
+    }
+}
+exports.gitCheckout = gitCheckout;
 /**
  * Get the list of shas between the current and previous sha.
  * Uses git log to print the sha and commit message header for each commit.
@@ -52375,11 +52398,11 @@ function extractCommitMetadata(message) {
  * @param previousSha
  * @returns List of shas between the current and previous sha
  */
-async function gitLog(from, to, branch) {
+async function gitLog(from, to) {
     let shas = '';
     const isSameSha = from === to;
-    const range = isSameSha ? `${to} -1` : `${from}^! ${to} ${branch}`;
-    const result = await (0, exec_1.exec)('git', ['log', `${range}`, '--pretty=format:%H %s'], {
+    const range = isSameSha ? `${to} -1` : `${from}^! ${to}`;
+    const result = await (0, exec_1.exec)('git', ['log', `${range}`, `--pretty=format:%H %s`], {
         listeners: {
             stdout: (data) => {
                 shas += data.toString();
@@ -52524,6 +52547,7 @@ const helpers_1 = __nccwpck_require__(43015);
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
+    let originalBranch = '';
     try {
         // Get some initial context and inputs necessary for the action
         const prefix = core.getInput('prefix', { required: true });
@@ -52536,12 +52560,14 @@ async function run() {
         const date = new Date();
         const releaseTitle = `${prefix}-${(0, date_fns_1.format)(date, 'yyyy-MM-dd-HH-mm')}`;
         // If branch specified, checkout that branch
-        if (branch) {
-            core.info(`Using ${branch} branch to get commit log`);
+        if (branch !== '') {
+            core.info(`Checking out branch ${branch}`);
+            originalBranch = await (0, helpers_1.gitCurrentBranch)();
+            await (0, helpers_1.gitCheckout)(branch);
         }
         // Process all commits since the last release and group them by type
         core.startGroup('Commits in range');
-        const commits = await (0, helpers_1.gitLog)(from, to, branch);
+        const commits = await (0, helpers_1.gitLog)(from, to);
         for (const commit of commits) {
             core.info(`${commit.sha} - ${commit.message}`);
         }
@@ -52583,6 +52609,12 @@ async function run() {
         // Fail the workflow run if an error occurs
         if (error instanceof Error)
             core.setFailed(error.message);
+    }
+    finally {
+        if (originalBranch !== '') {
+            core.info(`Checking out original branch ${originalBranch}`);
+            await (0, helpers_1.gitCheckout)(originalBranch);
+        }
     }
 }
 exports.run = run;

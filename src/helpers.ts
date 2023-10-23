@@ -54,6 +54,29 @@ function extractCommitMetadata(message: string): CommitMetadata | null {
   }
 }
 
+export async function gitCurrentBranch(): Promise<string> {
+  // Get current branch name
+  let currentBranch = ''
+  const exitCode = await exec('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+    listeners: {
+      stdout: (data: Buffer) => {
+        currentBranch += data.toString()
+      }
+    }
+  })
+  if (exitCode !== 0) {
+    throw new Error('Failed to get current branch')
+  }
+  return currentBranch.trim()
+}
+
+export async function gitCheckout(branch: string): Promise<void> {
+  const result = await exec('git', ['checkout', branch])
+  if (result !== 0) {
+    throw new Error(`Failed to checkout branch ${branch}`)
+  }
+}
+
 export interface GitLog {
   sha: string
   message: string
@@ -66,17 +89,13 @@ export interface GitLog {
  * @param previousSha
  * @returns List of shas between the current and previous sha
  */
-export async function gitLog(
-  from: string,
-  to: string,
-  branch: string
-): Promise<GitLog[]> {
+export async function gitLog(from: string, to: string): Promise<GitLog[]> {
   let shas = ''
   const isSameSha = from === to
-  const range = isSameSha ? `${to} -1` : `${from}^! ${to} ${branch}`
+  const range = isSameSha ? `${to} -1` : `${from}^! ${to}`
   const result = await exec(
     'git',
-    ['log', `${range}`, '--pretty=format:%H %s'],
+    ['log', `${range}`, `--pretty=format:%H %s`],
     {
       listeners: {
         stdout: (data: Buffer) => {
