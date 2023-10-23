@@ -186,6 +186,9 @@ export async function processCommits(
 
     core.debug(`Packages: ${packages}`)
     core.debug(`Is monorepo: ${isMonorepo}`)
+    core.debug(
+      `Is conventional commit: ${isConventionalCommit(commit.message)}`
+    )
 
     if (
       (!isMonorepo || packages.includes(workspace)) &&

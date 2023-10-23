@@ -52493,6 +52493,7 @@ async function processCommits(commits, workspace) {
         const isMonorepo = json.monorepo;
         core.debug(`Packages: ${packages}`);
         core.debug(`Is monorepo: ${isMonorepo}`);
+        core.debug(`Is conventional commit: ${isConventionalCommit(commit.message)}`);
         if ((!isMonorepo || packages.includes(workspace)) &&
             isConventionalCommit(commit.message)) {
             relevantCommits.push(commit);
