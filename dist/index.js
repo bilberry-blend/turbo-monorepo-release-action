@@ -52536,9 +52536,22 @@ async function run() {
         const releaseTitle = `${prefix}-${(0, date_fns_1.format)(date, 'yyyy-MM-dd-HH-mm')}`;
         // Process all commits since the last release and group them by type
         const commits = await (0, helpers_1.gitLog)(from, to);
+        core.startGroup('Commits in range');
+        for (const commit of commits) {
+            core.info(`[${commit.sha}] ${commit.message}`);
+        }
+        core.endGroup();
+        core.startGroup('Relevant commits');
         const relevantCommits = await (0, helpers_1.processCommits)(commits, workspace);
+        for (const commit of relevantCommits) {
+            core.info(`[${commit.sha}] ${commit.message}`);
+        }
+        core.endGroup();
         const metadataList = (0, helpers_1.commitsToMetadata)(relevantCommits);
         const groupedMetadata = (0, helpers_1.groupCommits)(metadataList);
+        core.startGroup('Grouped metadata');
+        core.debug(JSON.stringify(groupedMetadata, null, 2));
+        core.endGroup();
         // Create a release body from the grouped metadata
         const releaseBody = Object.entries(groupedMetadata)
             .map(([type, list]) => {
@@ -52549,6 +52562,13 @@ async function run() {
             .join('\n\n\n');
         // Create a release
         const release = await (0, helpers_1.createRelease)(octokit, github.context, releaseTitle, releaseBody);
+        core.startGroup('Release information');
+        core.info(releaseTitle);
+        core.info('---');
+        core.info(releaseBody);
+        core.info('---');
+        core.info(release.html_url);
+        core.endGroup();
         // Add release URL as an output
         core.setOutput('release-url', release.html_url);
         core.setOutput('release-title', release.name);

@@ -30,9 +30,26 @@ export async function run(): Promise<void> {
 
     // Process all commits since the last release and group them by type
     const commits = await gitLog(from, to)
+
+    core.startGroup('Commits in range')
+    for (const commit of commits) {
+      core.info(`[${commit.sha}] ${commit.message}`)
+    }
+    core.endGroup()
+
+    core.startGroup('Relevant commits')
     const relevantCommits = await processCommits(commits, workspace)
+    for (const commit of relevantCommits) {
+      core.info(`[${commit.sha}] ${commit.message}`)
+    }
+    core.endGroup()
+
     const metadataList = commitsToMetadata(relevantCommits)
     const groupedMetadata = groupCommits(metadataList)
+
+    core.startGroup('Grouped metadata')
+    core.debug(JSON.stringify(groupedMetadata, null, 2))
+    core.endGroup()
 
     // Create a release body from the grouped metadata
     const releaseBody = Object.entries(groupedMetadata)
@@ -50,6 +67,14 @@ export async function run(): Promise<void> {
       releaseTitle,
       releaseBody
     )
+
+    core.startGroup('Release information')
+    core.info(releaseTitle)
+    core.info('---')
+    core.info(releaseBody)
+    core.info('---')
+    core.info(release.html_url)
+    core.endGroup()
 
     // Add release URL as an output
     core.setOutput('release-url', release.html_url)
