@@ -17,7 +17,8 @@ inputs:
     required: true
   prefix:
     description: 'The prefix of the release tag (e.g. my-app)'
-    required: true
+    required: false
+    default: ''
   workspace:
     description: 'The turbo workspace name used to filter commits, (e.g. my-app)'
     required: true
