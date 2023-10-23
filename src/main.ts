@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import { exec } from '@actions/exec'
 import { format } from 'date-fns'
 import {
   ConventionalType,
@@ -38,6 +39,17 @@ export async function run(): Promise<void> {
       originalBranch = await gitCurrentBranch()
       await gitCheckout(branch)
     }
+
+    let revisions = ''
+    await exec('git', ['log', '--pretty="format:%H %s"'], {
+      listeners: {
+        stdout: (data: Buffer) => {
+          revisions += data.toString()
+        }
+      }
+    })
+
+    core.info(`Revisions: ${revisions}`)
 
     // Process all commits since the last release and group them by type
     core.startGroup('Commits in range')
