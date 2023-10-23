@@ -52374,7 +52374,7 @@ exports.conventionalNameToEmoji = {
 /**
  * Checks if a commit message is a conventional commit.
  */
-function isConventionalCommit(message) {
+function conventionalCommit(message) {
     // No capture groups or length limits, just a simple regex to check if the message matches the conventional commit format
     // Check that type is one of the conventional types
     const regex = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?: .+/;
@@ -52492,11 +52492,11 @@ async function processCommits(commits, workspace) {
         const json = JSON.parse(result);
         const packages = json.packages;
         const isMonorepo = json.monorepo;
+        const isConventionalCommit = conventionalCommit(commit.message);
         core.debug(`Packages: ${packages}`);
         core.debug(`Is monorepo: ${isMonorepo}`);
-        core.debug(`Is conventional commit: ${isConventionalCommit(commit.message)}`);
-        if ((!isMonorepo || packages.includes(workspace)) &&
-            isConventionalCommit(commit.message)) {
+        core.debug(`Is conventional commit: ${isConventionalCommit}`);
+        if ((!isMonorepo || packages.includes(workspace)) && isConventionalCommit) {
             relevantCommits.push(commit);
         }
     }
@@ -52625,13 +52625,6 @@ async function run() {
             .join('\n\n\n');
         // Create a release
         const release = await (0, helpers_1.createRelease)(octokit, github.context, releaseTitle, releaseBody);
-        core.startGroup('Release information');
-        core.info(releaseTitle);
-        core.info('---');
-        core.info(releaseBody);
-        core.info('---');
-        core.info(release.html_url);
-        core.endGroup();
         // Add release URL as an output
         core.setOutput('release-url', release.html_url);
         core.setOutput('release-title', release.name);
@@ -52644,6 +52637,7 @@ async function run() {
     }
     finally {
         if (originalBranch !== '') {
+            // If we changed branches, switch back
             core.info(`Checking out original branch ${originalBranch}`);
             await (0, helpers_1.gitCheckout)(originalBranch);
         }

@@ -83,6 +83,14 @@ jobs:
           to: ${{ steps.get-commits.outputs.third-commit }}
           branch: "main"
 
-      - name: Print Output
-        id: output
+      - name: Print URL
+        id: output-url
         run: echo "${{ steps.test-action.outputs.release-url }}"
+
+      - name: Print title
+        id: output-title
+        run: echo "${{ steps.test-action.outputs.release-title }}"
+
+      - name: Print body
+        id: output-body
+        run: echo "${{ steps.test-action.outputs.release-body }}"

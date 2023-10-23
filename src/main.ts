@@ -78,14 +78,6 @@ export async function run(): Promise<void> {
       releaseBody
     )
 
-    core.startGroup('Release information')
-    core.info(releaseTitle)
-    core.info('---')
-    core.info(releaseBody)
-    core.info('---')
-    core.info(release.html_url)
-    core.endGroup()
-
     // Add release URL as an output
     core.setOutput('release-url', release.html_url)
     core.setOutput('release-title', release.name)
@@ -95,6 +87,7 @@ export async function run(): Promise<void> {
     if (error instanceof Error) core.setFailed(error.message)
   } finally {
     if (originalBranch !== '') {
+      // If we changed branches, switch back
       core.info(`Checking out original branch ${originalBranch}`)
       await gitCheckout(originalBranch)
     }

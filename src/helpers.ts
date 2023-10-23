@@ -27,7 +27,7 @@ export type ConventionalType = keyof typeof conventionalNameToEmoji
 /**
  * Checks if a commit message is a conventional commit.
  */
-function isConventionalCommit(message: string): boolean {
+function conventionalCommit(message: string): boolean {
   // No capture groups or length limits, just a simple regex to check if the message matches the conventional commit format
   // Check that type is one of the conventional types
   const regex =
@@ -184,17 +184,13 @@ export async function processCommits(
 
     const packages = json.packages
     const isMonorepo = json.monorepo
+    const isConventionalCommit = conventionalCommit(commit.message)
 
     core.debug(`Packages: ${packages}`)
     core.debug(`Is monorepo: ${isMonorepo}`)
-    core.debug(
-      `Is conventional commit: ${isConventionalCommit(commit.message)}`
-    )
+    core.debug(`Is conventional commit: ${isConventionalCommit}`)
 
-    if (
-      (!isMonorepo || packages.includes(workspace)) &&
-      isConventionalCommit(commit.message)
-    ) {
+    if ((!isMonorepo || packages.includes(workspace)) && isConventionalCommit) {
       relevantCommits.push(commit)
     }
   }
