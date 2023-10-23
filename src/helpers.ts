@@ -95,7 +95,7 @@ export async function gitLog(from: string, to: string): Promise<GitLog[]> {
   const range = isSameSha ? `${to} -1` : `${from}..${to}`
   const result = await exec(
     'git',
-    ['log', `${range}`, `--pretty="format:%H %s"`],
+    ['log', `${range}`, `--pretty=format:%H %s`],
     {
       listeners: {
         stdout: (data: Buffer) => {
