@@ -1,6 +1,7 @@
 import { exec } from '@actions/exec'
 import * as github from '@actions/github'
 import { Context } from '@actions/github/lib/context'
+import * as core from '@actions/core'
 import { DryRunJson } from './turbo'
 
 type Octokit = ReturnType<typeof github.getOctokit>
@@ -182,6 +183,10 @@ export async function processCommits(
 
     const packages = json.packages
     const isMonorepo = json.monorepo
+
+    core.debug(`Packages: ${packages}`)
+    core.debug(`Is monorepo: ${isMonorepo}`)
+
     if (
       (!isMonorepo || packages.includes(workspace)) &&
       isConventionalCommit(commit.message)
