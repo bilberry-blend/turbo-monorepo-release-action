@@ -33,14 +33,14 @@ export async function run(): Promise<void> {
 
     core.startGroup('Commits in range')
     for (const commit of commits) {
-      core.info(`[${commit.sha}] ${commit.message}`)
+      core.info(`${commit.sha} - ${commit.message}`)
     }
     core.endGroup()
 
     core.startGroup('Relevant commits')
     const relevantCommits = await processCommits(commits, workspace)
     for (const commit of relevantCommits) {
-      core.info(`[${commit.sha}] ${commit.message}`)
+      core.info(`${commit.sha} - ${commit.message}`)
     }
     core.endGroup()
 

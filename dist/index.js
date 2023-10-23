@@ -52378,7 +52378,7 @@ function extractCommitMetadata(message) {
 async function gitLog(from, to) {
     let shas = '';
     const isSameSha = from === to;
-    const range = isSameSha ? `${to} -1` : `${from}^..${to}`;
+    const range = isSameSha ? `${to} -1` : `${from}^! ${to}`;
     const result = await (0, exec_1.exec)('git', ['log', `${range}`, '--pretty=format:%H %s'], {
         listeners: {
             stdout: (data) => {
@@ -52538,13 +52538,13 @@ async function run() {
         const commits = await (0, helpers_1.gitLog)(from, to);
         core.startGroup('Commits in range');
         for (const commit of commits) {
-            core.info(`[${commit.sha}] ${commit.message}`);
+            core.info(`${commit.sha} - ${commit.message}`);
         }
         core.endGroup();
         core.startGroup('Relevant commits');
         const relevantCommits = await (0, helpers_1.processCommits)(commits, workspace);
         for (const commit of relevantCommits) {
-            core.info(`[${commit.sha}] ${commit.message}`);
+            core.info(`${commit.sha} - ${commit.message}`);
         }
         core.endGroup();
         const metadataList = (0, helpers_1.commitsToMetadata)(relevantCommits);
