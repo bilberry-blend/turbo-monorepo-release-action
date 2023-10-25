@@ -69,10 +69,11 @@ jobs:
         run: echo ${{ steps.create-release.outputs.release-url }}
 ```
 
-## Example release body output:
+## Example release body output
 
-The output from the action is a release URL that can be used to link to the
+The release body is generated from the commit messages in the range.
 
+```
 👷 **build**
 
 - Bump actions/setup-node from 2 to 4 (#12)
@@ -81,6 +82,7 @@ The output from the action is a release URL that can be used to link to the
 📝 **docs**
 
 - Improve documentation (#13)
+```
 
 ## Development
 
