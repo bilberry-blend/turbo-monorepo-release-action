@@ -73,7 +73,7 @@ jobs:
 
 The release body is generated from the commit messages in the range.
 
-```
+```markdown
 👷 **build**
 
 - Bump actions/setup-node from 2 to 4 (#12)
@@ -88,7 +88,7 @@ The release body is generated from the commit messages in the range.
 
 Node v20 or later is recommended.
 
-```
+```bash
 npm install
 npm run all
 ```
@@ -97,8 +97,7 @@ You should run the action locally using [act](https://github.com/nektos/act).
 This allows you to test the action in a simulated GitHub workflow before pushing a PR.
 act requires Docker to be installed.
 
-
-```
+```bash
 # List available workflow jobs to run
 act -l
 

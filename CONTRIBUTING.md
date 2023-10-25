@@ -14,6 +14,10 @@ While we built it to be general enough to support other GitHub users as well, we
 We may reject contributions that are outside the scope of this action.
 In such cases feel free to make a fork under the terms of the MIT license.
 
+Changes should preferably be non-breaking and backwards compatible.
+New behaviour should be opt-in and not change the default behaviour of the action.
+We will consider breaking changes if the benefits are significant enough.
+
 ## Testing
 
 The project makes use of tests to ensure that the code works as expected.
