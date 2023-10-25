@@ -54,6 +54,11 @@ export async function run(): Promise<void> {
     }
     core.endGroup()
 
+    if (relevantCommits.length === 0) {
+      core.info('No relevant commits found, exiting')
+      return
+    }
+
     const metadataList = commitsToMetadata(relevantCommits)
     const groupedMetadata = groupCommits(metadataList)
 

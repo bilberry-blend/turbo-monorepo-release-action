@@ -146,4 +146,31 @@ describe('action', () => {
     // Verify that all of the core library functions were called correctly
     expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Failed to create release')
   })
+
+  it('returns early if no relevant commits are found', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    gitLogMock.mockImplementation(async () => {
+      return Promise.resolve([
+        {
+          sha: '2345678901',
+          message: 'test commit'
+        },
+        {
+          sha: '1234567890',
+          message: 'test commit'
+        }
+      ])
+    })
+
+    processCommitsMock.mockImplementation(async () => {
+      return Promise.resolve([])
+    })
+
+    await main.run()
+    expect(runMock).toHaveReturned()
+
+    // Verify that all of the core library functions were called correctly
+    expect(setOutputMock.mock.calls.length).toBe(0)
+    expect(createReleaseMock.mock.calls.length).toBe(0)
+  })
 })

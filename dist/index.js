@@ -52610,6 +52610,10 @@ async function run() {
             core.info(`${commit.sha} - ${commit.message}`);
         }
         core.endGroup();
+        if (relevantCommits.length === 0) {
+            core.info('No relevant commits found, exiting');
+            return;
+        }
         const metadataList = (0, helpers_1.commitsToMetadata)(relevantCommits);
         const groupedMetadata = (0, helpers_1.groupCommits)(metadataList);
         core.startGroup('Grouped metadata');
