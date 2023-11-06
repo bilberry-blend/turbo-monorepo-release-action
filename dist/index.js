@@ -52476,7 +52476,7 @@ async function processCommits(commits, workspace) {
             'turbo',
             'run',
             'build',
-            '--filter=${workspace}...[${commit.sha}^1]',
+            `--filter=${workspace}...[${commit.sha}^1]`,
             '--dry=json'
         ], {
             listeners: {
