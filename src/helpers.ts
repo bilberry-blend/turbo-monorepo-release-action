@@ -163,7 +163,7 @@ export async function processCommits(
         'turbo',
         'run',
         'build',
-        `--filter='${workspace}...[${commit.sha}^1]'`,
+        `--filter=${workspace}...[${commit.sha}^1]`,
         '--dry=json'
       ],
       {
